@@ -4,6 +4,7 @@ include { DOWNLOAD_SRA } from './modules/sra/main.nf'
 include { FASTQC as FASTQC_RAW } from './modules/fastqc/main.nf'
 include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
 include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
+include { BOWTIE2_BUILD } from './modules/bowtie2/build.nf'
 
 
 workflow {
@@ -32,5 +33,9 @@ workflow {
 
     // 4. QC on trimmed reads
     FASTQC_TRIMMED(TRIMMOMATIC.out.trimmed_reads)
+
+    // 5. Build Bowtie2 index
+    genome_fasta = Channel.fromPath(params.genome)
+    BOWTIE2_BUILD(genome_fasta)
 }
 
