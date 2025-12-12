@@ -2,6 +2,7 @@
 Implementing a bioinformatics pipeline and an analysis on a publication focused on chromatin accessiblity as assayed by ATACseq.
 
 ## Project Overview
+ATAC-Seq which stands for Assay for Transposase-Accessible Chromatin with high-throughput sequencing is an established technique for identifying regions of open and closed chromatin via a transposase enzyme, called Tn5. This enzyme inserts sequencing adapters into accessible spots and creates a library of tagged genomic regions/fragments. Finally, these are amplified and sequenced. 
 
 ## Prerequisites
 
@@ -26,7 +27,6 @@ Duration    : 10m 26s
 CPU hours   : 7.9
 Succeeded   : 8
 
-[b4/c82e82] DOWNLOAD_SRA (1) [100%] 8 of 8, cached: 8 ✔
 [9a/da0531] FASTQC_RAW (6)   [100%] 8 of 8 ✔
 Completed at: 11-Dec-2025 19:36:45
 Duration    : 3m 21s
@@ -34,5 +34,10 @@ CPU hours   : 8.8 (90% cached)
 Succeeded   : 8
 Cached      : 8
 
-
+[76/95e46d] TRIMMOMATIC (3)  [100%] 8 of 8 ✔
+Completed at: 11-Dec-2025 19:54:30
+Duration    : 9m 16s
+CPU hours   : 16.2 (54.2% cached)
+Succeeded   : 8
+Cached      : 16
 ```
