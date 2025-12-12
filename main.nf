@@ -8,6 +8,7 @@ include { BOWTIE2_BUILD } from './modules/bowtie2/build.nf'
 include { BOWTIE2_ALIGN } from './modules/bowtie2/align.nf'
 include { REMOVE_MITO } from './modules/samtools/remove_mito.nf'
 include { MACS3_CALLPEAK } from './modules/macs3/main.nf'
+include { CREATE_COUNT_MATRIX } from './modules/bedtools/count_matrix.nf'
 
 
 workflow {
@@ -59,4 +60,10 @@ workflow {
         .set { grouped_bams }
     
     MACS3_CALLPEAK(grouped_bams)
+
+    // 9. Create count matrix for differential analysis
+    CREATE_COUNT_MATRIX(
+        MACS3_CALLPEAK.out.narrowPeak.collect(),
+        REMOVE_MITO.out.bam.collect()
+    )
 }
