@@ -52,32 +52,22 @@ workflow {
 
     // 7. Remove mitochondrial reads
     REMOVE_MITO(BOWTIE2_ALIGN.out.bam)
-
+    
     // 8. Peak calling with MACS3 - group by condition
     REMOVE_MITO.out.bam
-        .map { sample_id, condition, replicate, bam, bai -> 
+        .map { sample_id, condition, replicate, bam -> 
             tuple(condition, bam) 
         }
         .groupTuple()
         .set { grouped_bams }
-
+    
     MACS3_CALLPEAK(grouped_bams)
     
     // 9. Create count matrix for differential analysis
-    // First, prepare peaks channel - collect all peaks files
-    MACS3_CALLPEAK.out.narrowPeak
-        .collect()
-        .set { all_peaks }
-
-    // Second, prepare BAMs channel - we need to map to include sample info
-    REMOVE_MITO.out.bam
-        .map { sample_id, condition, replicate, bam, bai -> 
-            tuple(sample_id, condition, replicate, bam) 
-        }
-        .collect()
-        .set { all_bams }
-
-    CREATE_COUNT_MATRIX(all_peaks, all_bams)
+    CREATE_COUNT_MATRIX(
+        MACS3_CALLPEAK.out.narrowPeak.collect(),
+        REMOVE_MITO.out.bam.collect()
+    )
 
     // 10. Differential accessibility analysis
     DIFFERENTIAL_ACCESSIBILITY(CREATE_COUNT_MATRIX.out.counts)
@@ -93,4 +83,32 @@ workflow {
         DIFFERENTIAL_ACCESSIBILITY.out.significant_peaks,
         genome_fasta
     )
+    
 }
+/*
+CONCEPTUAL MAP
+    PARAMS.SAMPLESHEET
+        │
+    DOWNLOAD_SRA                        REFERENCE GENOME
+        │                                     │
+        ├─────────────────┬───────────────────┤
+    FASTQC_RAW      TRIMMOMATICS       BOWTIE2_BUILD
+        ┌─────────────────┤                   │
+        │                 └─────────┬─────────┘
+    FASTQC_TRIMMED            BOWTIE2_ALIGN
+                                    │
+                               REMOVE_MITO
+                         ┌──────────┤
+                         │    MACS3_CALLPEAK
+                         │          │
+                      CREATE_COUNT_MATRIX
+                                    │
+    PARAMS.GTF    DIFFERENTIAL_ACCESSIBILITY──┐
+        └──────────┬────────────────┘         │
+                  ANNOTATE_PEAKS           FIND_MOTIFS
+
+┌──┬──┐ ╭-╮
+├──┼──┤ ╰─╯
+└──┴──┘
+
+*/

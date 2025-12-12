@@ -14,22 +14,28 @@ process BOWTIE2_ALIGN {
     
     script:
     """
-    bowtie2 -p ${task.cpus} \\
-        --very-sensitive \\
-        -X 2000 \\
-        -x ${index}/genome \\
-        -U ${reads} \\
-        2> ${sample_id}_align.log \\
-        | samtools view -@ ${task.cpus} -bS -q 30 - \\
-        | samtools sort -@ ${task.cpus} -o ${sample_id}.bam -
+    # Align with bowtie2
+    bowtie2 -p ${task.cpus} \
+        --very-sensitive \
+        -X 2000 \
+        -x ${index}/genome \
+        -U ${reads} \
+        2> ${sample_id}_align.log | \
+        samtools view -@ ${task.cpus} -bS -q 30 - > ${sample_id}_unsorted.bam
     
+    # Check if alignment succeeded
+    if [ ! -s ${sample_id}_unsorted.bam ]; then
+        echo "ERROR: Alignment failed or produced empty BAM"
+        exit 1
+    fi
+    
+    # Sort BAM
+    samtools sort -@ ${task.cpus} -o ${sample_id}.bam ${sample_id}_unsorted.bam
+    
+    # Index BAM
     samtools index ${sample_id}.bam
-    """
     
-    stub:
-    """
-    touch ${sample_id}.bam
-    touch ${sample_id}.bam.bai
-    touch ${sample_id}_align.log
+    # Clean up
+    rm ${sample_id}_unsorted.bam
     """
 }
