@@ -7,6 +7,7 @@ include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
 include { BOWTIE2_BUILD } from './modules/bowtie2/build.nf'
 include { BOWTIE2_ALIGN } from './modules/bowtie2/align.nf'
 include { REMOVE_MITO } from './modules/samtools/remove_mito.nf'
+include { MACS3_CALLPEAK } from './modules/macs3/main.nf'
 
 
 workflow {
@@ -48,4 +49,14 @@ workflow {
 
     // 7. Remove mitochondrial reads
     REMOVE_MITO(BOWTIE2_ALIGN.out.bam)
+
+    // 8. Peak calling with MACS3 - group by condition
+    REMOVE_MITO.out.bam
+        .map { sample_id, condition, replicate, bam -> 
+            tuple(condition, bam) 
+        }
+        .groupTuple()
+        .set { grouped_bams }
+    
+    MACS3_CALLPEAK(grouped_bams)
 }
