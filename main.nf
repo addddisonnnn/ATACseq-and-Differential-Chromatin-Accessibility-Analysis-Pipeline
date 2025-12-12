@@ -55,19 +55,29 @@ workflow {
 
     // 8. Peak calling with MACS3 - group by condition
     REMOVE_MITO.out.bam
-        .map { sample_id, condition, replicate, bam -> 
+        .map { sample_id, condition, replicate, bam, bai -> 
             tuple(condition, bam) 
         }
         .groupTuple()
         .set { grouped_bams }
-    
-    MACS3_CALLPEAK(grouped_bams)
 
+    MACS3_CALLPEAK(grouped_bams)
+    
     // 9. Create count matrix for differential analysis
-    CREATE_COUNT_MATRIX(
-        MACS3_CALLPEAK.out.narrowPeak.collect(),
-        REMOVE_MITO.out.bam.collect()
-    )
+    // First, prepare peaks channel - collect all peaks files
+    MACS3_CALLPEAK.out.narrowPeak
+        .collect()
+        .set { all_peaks }
+
+    // Second, prepare BAMs channel - we need to map to include sample info
+    REMOVE_MITO.out.bam
+        .map { sample_id, condition, replicate, bam, bai -> 
+            tuple(sample_id, condition, replicate, bam) 
+        }
+        .collect()
+        .set { all_bams }
+
+    CREATE_COUNT_MATRIX(all_peaks, all_bams)
 
     // 10. Differential accessibility analysis
     DIFFERENTIAL_ACCESSIBILITY(CREATE_COUNT_MATRIX.out.counts)

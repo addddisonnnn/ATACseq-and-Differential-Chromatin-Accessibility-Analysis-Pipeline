@@ -13,18 +13,34 @@ process REMOVE_MITO {
     
     script:
     """
-    // Remove mitochondrial reads (chrM or MT depending on reference)
-    samtools idxstats ${bam} | cut -f1 | grep -v -E 'chrM|MT' > keep_chroms.txt
+    # Debug: Show input files
+    echo "=== DEBUG: REMOVE_MITO ==="
+    echo "sample_id: ${sample_id}"
+    echo "bam file: ${bam}"
+    echo "bai file: ${bai}"
     
-    samtools view -@ ${task.cpus} -b -h ${bam} \$(cat keep_chroms.txt | tr '\\n' ' ') \\
-        > ${sample_id}_noMT.bam
+    # Remove mitochondrial reads (chrM or MT depending on reference)
+    samtools idxstats "${bam}" | cut -f1 | grep -v -E 'chrM|MT' > keep_chroms.txt
     
-    samtools index ${sample_id}_noMT.bam
+    # Check what chromosomes we're keeping
+    echo "Chromosomes to keep:"
+    cat keep_chroms.txt
+    
+    # Create a safe list of chromosomes
+    chrom_list=\$(cat keep_chroms.txt | tr '\\n' ' ')
+    
+    # Extract non-mitochondrial reads
+    samtools view -@ ${task.cpus} -b -h "${bam}" \${chrom_list} > "${sample_id}_noMT.bam"
+    
+    # Index the output BAM
+    samtools index "${sample_id}_noMT.bam"
+    
+    echo "Successfully created ${sample_id}_noMT.bam"
     """
     
     stub:
     """
-    touch ${sample_id}_noMT.bam
-    touch ${sample_id}_noMT.bam.bai
+    touch "${sample_id}_noMT.bam"
+    touch "${sample_id}_noMT.bam.bai"
     """
 }
