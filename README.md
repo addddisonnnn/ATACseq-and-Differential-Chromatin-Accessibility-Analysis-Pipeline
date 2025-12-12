@@ -67,3 +67,12 @@ Cached      : 24
 Ignored     : 6
 Failed      : 6
 ```
+
+```
+[03/7a2b52] BOWTIE2_BUILD (1)  [100%] 1 of 1 ✔
+Completed at: 11-Dec-2025 21:03:30
+Duration    : 43m 29s
+CPU hours   : 28.1 (58.5% cached)
+Succeeded   : 7
+Cached      : 26
+```
