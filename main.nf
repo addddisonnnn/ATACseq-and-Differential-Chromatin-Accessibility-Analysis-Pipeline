@@ -2,6 +2,8 @@
 
 include { DOWNLOAD_SRA } from './modules/sra/main.nf'
 include { FASTQC as FASTQC_RAW } from './modules/fastqc/main.nf'
+include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
+
 
 workflow {
     // Create channel from samplesheet with SRR numbers
