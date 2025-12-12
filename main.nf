@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { DOWNLOAD_SRA } from './modules/sra/main.nf'
+include { FASTQC as FASTQC_RAW } from './modules/fastqc/main.nf'
 
 workflow {
     // Create channel from samplesheet with SRR numbers
@@ -19,5 +20,8 @@ workflow {
     
     // 1. Download data from SRA
     DOWNLOAD_SRA(samples_ch)
+
+    // 2. QC on raw reads
+    FASTQC_RAW(DOWNLOAD_SRA.out.fastq)
 }
 
