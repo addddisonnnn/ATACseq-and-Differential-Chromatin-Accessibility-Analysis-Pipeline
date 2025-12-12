@@ -14,9 +14,29 @@ ATAC-Seq which stands for Assay for Transposase-Accessible Chromatin with high-t
 ## Project Structure
 ```
 ATACseq-and-Differential-Chromatin-Accessibility-Analysis-Pipeline
-├── nextflow.config             # Configuration
+├── nextflow.config         # Configuration
+├── main.nf                 # Main workflow
+├── atac_samples.csv        # Sample sheet with SRR IDs
+├── bin/
+│   └── download_references # Download reference
 ├── modules/
-│   └── sra/main.nf             # Download FASTQ
+│   ├── sra/main.nf         # Download FASTQ
+│   ├── fastqc/main.nf      # QC
+│   ├── trimmomatic/main.nf # Trimming
+│   ├── bowtie2/
+│   │   ├── build.nf        # Index building
+│   │   └── align.nf        # Alignment
+│   ├── samtools/remove_mito.nf
+│   ├── macs3/main.nf       # Peak calling
+│   ├── bedtools/count_matrix.nf
+│   ├── deseq2/main.nf      # Differential analysis
+│   └── homer/
+│       ├── annotate.nf     # Peak annotation
+│       └── motifs.nf       # Motif finding
+├── reference/
+│   ├── genome.fa           # Mouse Reference Gneome
+│   └── genes.gtf           # Mouse GTF Annotation
+└── results/                # Output directory
 ```
 
 ## Workflow
