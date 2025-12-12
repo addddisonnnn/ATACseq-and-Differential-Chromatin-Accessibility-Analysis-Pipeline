@@ -11,7 +11,7 @@ include { MACS3_CALLPEAK } from './modules/macs3/main.nf'
 include { CREATE_COUNT_MATRIX } from './modules/bedtools/count_matrix.nf'
 include { DIFFERENTIAL_ACCESSIBILITY } from './modules/deseq2/main.nf'
 include { ANNOTATE_PEAKS } from './modules/homer/annotate.nf'
-
+include { FIND_MOTIFS } from './modules/homer/motifs.nf'
 
 workflow {
     // Create channel from samplesheet with SRR numbers
@@ -78,5 +78,9 @@ workflow {
         Channel.fromPath(params.gtf)
     )
 
-
+    // 12. Motif finding on differentially accessible peaks
+    FIND_MOTIFS(
+        DIFFERENTIAL_ACCESSIBILITY.out.significant_peaks,
+        genome_fasta
+    )
 }
