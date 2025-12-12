@@ -6,6 +6,7 @@ include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
 include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
 include { BOWTIE2_BUILD } from './modules/bowtie2/build.nf'
 include { BOWTIE2_ALIGN } from './modules/bowtie2/align.nf'
+include { REMOVE_MITO } from './modules/samtools/remove_mito.nf'
 
 
 workflow {
@@ -44,4 +45,7 @@ workflow {
         .combine(BOWTIE2_BUILD.out.index)
         .set { reads_with_index }
     BOWTIE2_ALIGN(reads_with_index)
+
+    // 7. Remove mitochondrial reads
+    REMOVE_MITO(BOWTIE2_ALIGN.out.bam)
 }
