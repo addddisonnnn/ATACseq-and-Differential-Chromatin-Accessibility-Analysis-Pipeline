@@ -5,6 +5,7 @@ include { FASTQC as FASTQC_RAW } from './modules/fastqc/main.nf'
 include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
 include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
 include { BOWTIE2_BUILD } from './modules/bowtie2/build.nf'
+include { BOWTIE2_ALIGN } from './modules/bowtie2/align.nf'
 
 
 workflow {
@@ -37,5 +38,10 @@ workflow {
     // 5. Build Bowtie2 index
     genome_fasta = Channel.fromPath(params.genome)
     BOWTIE2_BUILD(genome_fasta)
-}
 
+    // 6. Align with ATAC-seq specific parameters
+    TRIMMOMATIC.out.trimmed_reads
+        .combine(BOWTIE2_BUILD.out.index)
+        .set { reads_with_index }
+    BOWTIE2_ALIGN(reads_with_index)
+}
