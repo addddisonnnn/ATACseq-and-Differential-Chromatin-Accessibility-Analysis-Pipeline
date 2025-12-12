@@ -9,6 +9,7 @@ include { BOWTIE2_ALIGN } from './modules/bowtie2/align.nf'
 include { REMOVE_MITO } from './modules/samtools/remove_mito.nf'
 include { MACS3_CALLPEAK } from './modules/macs3/main.nf'
 include { CREATE_COUNT_MATRIX } from './modules/bedtools/count_matrix.nf'
+include { DIFFERENTIAL_ACCESSIBILITY } from './modules/deseq2/main.nf'
 
 
 workflow {
@@ -66,4 +67,7 @@ workflow {
         MACS3_CALLPEAK.out.narrowPeak.collect(),
         REMOVE_MITO.out.bam.collect()
     )
+
+    // 10. Differential accessibility analysis
+    DIFFERENTIAL_ACCESSIBILITY(CREATE_COUNT_MATRIX.out.counts)
 }
