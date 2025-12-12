@@ -23,5 +23,8 @@ workflow {
 
     // 2. QC on raw reads
     FASTQC_RAW(DOWNLOAD_SRA.out.fastq)
+
+    // 3. Trim adapters (Nextera for ATAC-seq)
+    TRIMMOMATIC(DOWNLOAD_SRA.out.fastq)
 }
 

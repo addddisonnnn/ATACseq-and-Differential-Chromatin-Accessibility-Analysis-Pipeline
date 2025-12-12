@@ -10,6 +10,7 @@ Implementing a bioinformatics pipeline and an analysis on a publication focused 
 ## Workflow
 1. Download ATAC-seq files (SRA Toolkit)
 2. Download reference files (wget)
+3. Trim adapters - Nextera for ATAC-seq (Trimmomatic)
 
 ## Key Results
 
@@ -32,4 +33,6 @@ Duration    : 3m 21s
 CPU hours   : 8.8 (90% cached)
 Succeeded   : 8
 Cached      : 8
+
+
 ```
