@@ -2,6 +2,11 @@
 Implementing a bioinformatics pipeline and an analysis on a publication focused on chromatin accessiblity as assayed by ATACseq.
 
 ## Project Overview
+
+### Understanding HDAC1's Role in Dendritic Cell Development and Cancer Immunity
+Dendritic Cells (DCs) are the immune system's 'conductors', they conduct immune cells, such as T cells, what to attack. The paper discovered how a protein called HDAC1 can act as a 'volume control' for these DCs conductors, and when HDAC1 is removed, suprisingly, the immune system gets better at fighting tumors. 
+
+### ATAC-Seq
 ATAC-Seq which stands for Assay for Transposase-Accessible Chromatin with high-throughput sequencing is an established technique for identifying regions of open and closed chromatin via a transposase enzyme, called Tn5. This enzyme inserts sequencing adapters into accessible spots and creates a library of tagged genomic regions/fragments. Finally, these are amplified and sequenced. 
 
 ## Prerequisites
@@ -32,21 +37,24 @@ Completed at: 11-Dec-2025 19:28:56
 Duration    : 10m 26s
 CPU hours   : 7.9
 Succeeded   : 8
-
+```
+```
 [9a/da0531] FASTQC_RAW (6)   [100%] 8 of 8 ✔
 Completed at: 11-Dec-2025 19:36:45
 Duration    : 3m 21s
 CPU hours   : 8.8 (90% cached)
 Succeeded   : 8
 Cached      : 8
-
+``` 
+```
 [76/95e46d] TRIMMOMATIC (3)  [100%] 8 of 8 ✔
 Completed at: 11-Dec-2025 19:54:30
 Duration    : 9m 16s
 CPU hours   : 16.2 (54.2% cached)
 Succeeded   : 8
 Cached      : 16
-
+```
+```
 [5c/deb8b1] FASTQC_TRIMMED (2) [100%] 8 of 8, ignored: 6 ✔
 [45/1802ab] NOTE: Process `FASTQC_TRIMMED (4)` terminated with an error exit status (1) -- Error is ignored
 [e4/e8cb6b] NOTE: Process `FASTQC_TRIMMED (6)` terminated with an error exit status (1) -- Error is ignored
