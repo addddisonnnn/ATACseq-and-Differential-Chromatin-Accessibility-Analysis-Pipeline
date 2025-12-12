@@ -7,6 +7,12 @@ ATAC-Seq which stands for Assay for Transposase-Accessible Chromatin with high-t
 ## Prerequisites
 
 ## Project Structure
+```
+ATACseq-and-Differential-Chromatin-Accessibility-Analysis-Pipeline
+├── nextflow.config             # Configuration
+├── modules/
+│   └── sra/main.nf             # Download FASTQ
+```
 
 ## Workflow
 1. Download ATAC-seq files (SRA Toolkit)
