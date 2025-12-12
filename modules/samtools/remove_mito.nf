@@ -13,7 +13,7 @@ process REMOVE_MITO {
     
     script:
     """
-    # Remove mitochondrial reads (chrM or MT depending on reference)
+    // Remove mitochondrial reads (chrM or MT depending on reference)
     samtools idxstats ${bam} | cut -f1 | grep -v -E 'chrM|MT' > keep_chroms.txt
     
     samtools view -@ ${task.cpus} -b -h ${bam} \$(cat keep_chroms.txt | tr '\\n' ' ') \\
