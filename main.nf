@@ -3,6 +3,7 @@
 include { DOWNLOAD_SRA } from './modules/sra/main.nf'
 include { FASTQC as FASTQC_RAW } from './modules/fastqc/main.nf'
 include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
+include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
 
 
 workflow {
@@ -28,5 +29,8 @@ workflow {
 
     // 3. Trim adapters (Nextera for ATAC-seq)
     TRIMMOMATIC(DOWNLOAD_SRA.out.fastq)
+
+    // 4. QC on trimmed reads
+    FASTQC_TRIMMED(TRIMMOMATIC.out.trimmed_reads)
 }
 
