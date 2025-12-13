@@ -3,7 +3,7 @@
 process MACS2_CALLPEAK {
     container 'ghcr.io/bf528/macs3:latest'
     publishDir "${params.outdir}/peaks", mode: 'copy'
-    label 'process_medium'
+    label 'process_high'
 
     input:
     tuple val(sample), val(cell_type), val(condition), val(replicate), path(bam), path(bai)
