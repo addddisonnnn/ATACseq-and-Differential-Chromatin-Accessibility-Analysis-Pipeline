@@ -4,3 +4,5 @@ work/
 results/
 reference/
 tmp/
+.gitignore
+download_ref*
