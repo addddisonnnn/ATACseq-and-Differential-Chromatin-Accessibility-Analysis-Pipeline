@@ -14,7 +14,14 @@ process FASTQC {
 
     script:
     """
-    fastqc -t ${task.cpus} ${reads}
+    # Set temporary directory to current work directory
+    export TMPDIR=\$PWD/tmp
+    mkdir -p \$TMPDIR
+    
+    # Also set Java temp directory
+    export _JAVA_OPTIONS="-Djava.io.tmpdir=\$TMPDIR"
+    
+    fastqc -t ${task.cpus} --dir \$TMPDIR ${reads}
     """
 
     stub:
