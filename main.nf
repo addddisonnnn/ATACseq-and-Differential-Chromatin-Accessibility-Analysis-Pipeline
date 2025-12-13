@@ -102,7 +102,8 @@ workflow {
     ANNOTATE_PEAKS(DIFF_ANALYSIS.out.diff_peaks)
 
     // 11. Motif analysis on differential peaks
-    MOTIF_ANALYSIS(DIFF_ANALYSIS.out.diff_peaks)
+    genome_fasta = Channel.fromPath(params.genome_fasta)
+    MOTIF_ANALYSIS(DIFF_ANALYSIS.out.diff_peaks, genome_fasta.first())
 
     // Generate bigWig files for visualization
     BIGWIG_COVERAGE(FILTER_ALIGNMENTS.out.filtered_bam)
@@ -144,23 +145,25 @@ workflow {
 CONCEPTUAL MAP
     PARAMS.SAMPLESHEET
         │
-    DOWNLOAD_SRA                        REFERENCE GENOME
-        │                                     │
-        ├─────────────────┬───────────────────┤
-    FASTQC_RAW      TRIMMOMATICS       BOWTIE2_BUILD
-        ┌─────────────────┤                   │
-        │                 └─────────┬─────────┘
-    FASTQC_TRIMMED            BOWTIE2_ALIGN
-                                    │
-                               REMOVE_MITO
-                         ┌──────────┤
-                         │    MACS3_CALLPEAK
-                         │          │
-                      CREATE_COUNT_MATRIX
-                                    │
-    PARAMS.GTF    DIFFERENTIAL_ACCESSIBILITY──┐
-        └──────────┬────────────────┘         │
-                  ANNOTATE_PEAKS           FIND_MOTIFS
+    DOWNLOAD_SRA ───────────┐
+        │               FASTQC_RAW
+    TRIMMOMATIC ────────────┐
+        │               FASTQC_TRIMMED
+    BOWTIE2_ALIGN
+        │
+    FILTERED_ALIGNMENTS
+        │
+    MACS2_CALLPEAK ───────────────────────────────┐
+        │                                         │
+    MERGE_PEAKS                                   │
+        │                                         │
+    FILTERED_ALIGNMENTS ─────────┬────────────────┤
+        │                        │                │
+    COUNT_PEAKS           BIGWIG_COVERAGE    FRIP_SCORE
+        │                        │                │
+    DIFF_ANALYSIS         COMPUTE_MATRIX       MULTIQC
+        │                        │
+    ANNOTATE_PEAKS         PLOT_HEATMAP
 
 ┌──┬──┐ ╭-╮
 ├──┼──┤ ╰─╯
