@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 
 process MULTIQC {
+    container 'ghcr.io/bf528/multiqc:latest'
     publishDir "${params.outdir}/multiqc", mode: 'copy'
     label 'process_low'
 
