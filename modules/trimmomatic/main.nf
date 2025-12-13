@@ -14,10 +14,18 @@ process TRIMMOMATIC {
 
     script:
     """
+    # Create adapter file if not found
+    cat > adapters.fa << 'EOF'
+>TruSeq3_IndexedAdapter
+AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
+>TruSeq3_UniversalAdapter
+AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA
+EOF
+
     trimmomatic SE -threads ${task.cpus} \
         ${reads} \
         ${sample}_trimmed.fastq.gz \
-        ILLUMINACLIP:\$TRIMMOMATIC_HOME/adapters/TruSeq3-SE.fa:2:30:10 \
+        ILLUMINACLIP:adapters.fa:2:30:10 \
         LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 \
         2> ${sample}_trimming_report.txt
     """
