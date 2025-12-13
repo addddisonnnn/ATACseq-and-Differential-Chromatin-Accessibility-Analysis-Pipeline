@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process FRIP_SCORE {
-    container 'ghcr.io/bf528/bedtools_samtools:latest'
+    container 'ghcr.io/bf528/samtools:latest'
     publishDir "${params.outdir}/qc", mode: 'copy'
     label 'process_low'
 
