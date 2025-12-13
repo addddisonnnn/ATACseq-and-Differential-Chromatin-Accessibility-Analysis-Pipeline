@@ -20,7 +20,7 @@ process FRIP_SCORE {
     inpeaks=\$(bedtools intersect -a ${bam} -b ${peaks} -u | samtools view -c)
     
     # Calculate FRiP
-    frip=\$(echo "scale=4; \$inpeaks / \$total" | bc)
+    frip=\$(awk -v ip=\$inpeaks -v t=\$total 'BEGIN {printf "%.4f", ip/t}')
     
     echo -e "Sample\tTotal_Reads\tReads_in_Peaks\tFRiP" > ${sample}_FRiP.txt
     echo -e "${sample}\t\$total\t\$inpeaks\t\$frip" >> ${sample}_FRiP.txt
