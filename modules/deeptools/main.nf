@@ -25,6 +25,67 @@ process BIGWIG_COVERAGE {
     """
 }
 
+process COMPUTE_MATRIX {
+    container 'ghcr.io/bf528/deeptools:latest'
+    publishDir "${params.outdir}/deeptools", mode: 'copy'
+    label 'process_medium'
+
+    input:
+    tuple val(cell_type), val(condition), path(bigwigs)
+
+    output:
+    tuple val(cell_type), val(condition), path("${cell_type}_${condition}_matrix.gz"), emit: matrix
+
+    script:
+    """
+    computeMatrix reference-point \
+        -S ${bigwigs.join(' ')} \
+        -R ${params.genome_gtf} \
+        --referencePoint TSS \
+        -b 3000 -a 3000 \
+        -p ${task.cpus} \
+        --skipZeros \
+        -o ${cell_type}_${condition}_matrix.gz
+    """
+
+    stub:
+    """
+    touch ${cell_type}_${condition}_matrix.gz
+    """
+}
+
+process PLOT_HEATMAP {
+    container 'ghcr.io/bf528/deeptools:latest'
+    publishDir "${params.outdir}/figures", mode: 'copy'
+    label 'process_low'
+
+    input:
+    tuple val(cell_type), val(condition), path(matrix)
+
+    output:
+    path("${cell_type}_${condition}_heatmap.png"), emit: heatmap
+    path("${cell_type}_${condition}_profile.png"), emit: profile
+
+    script:
+    """
+    plotHeatmap -m ${matrix} \
+        -o ${cell_type}_${condition}_heatmap.png \
+        --colorMap RdBu \
+        --whatToShow 'heatmap and colorbar'
+    
+    plotProfile -m ${matrix} \
+        -o ${cell_type}_${condition}_profile.png \
+        --perGroup \
+        --plotTitle "${cell_type} ${condition} TSS Profile"
+    """
+
+    stub:
+    """
+    touch ${cell_type}_${condition}_heatmap.png
+    touch ${cell_type}_${condition}_profile.png
+    """
+}
+
 process TSS_ENRICHMENT {
     container 'ghcr.io/bf528/deeptools:latest'
     publishDir "${params.outdir}/qc", mode: 'copy'

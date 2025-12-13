@@ -107,7 +107,21 @@ workflow {
     // Generate bigWig files for visualization
     BIGWIG_COVERAGE(FILTER_ALIGNMENTS.out.filtered_bam)
 
-    // Compute matrix for TSS enrichment
+    // Group bigwigs by cell type and condition for visualization
+    BIGWIG_COVERAGE.out.bigwig
+        .map { sample, cell_type, condition, replicate, bigwig ->
+            tuple(cell_type, condition, bigwig)
+        }
+        .groupTuple(by: [0, 1])
+        .set { grouped_bigwigs }
+
+    // Compute matrix for heatmaps (reproduces Figure 6)
+    COMPUTE_MATRIX(grouped_bigwigs)
+
+    // Plot heatmaps
+    PLOT_HEATMAP(COMPUTE_MATRIX.out.matrix)
+
+    // TSS enrichment per sample
     TSS_ENRICHMENT(BIGWIG_COVERAGE.out.bigwig)
 
     // Calculate FRiP scores

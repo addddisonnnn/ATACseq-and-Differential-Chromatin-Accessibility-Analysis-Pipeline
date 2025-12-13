@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process MERGE_PEAKS {
-    container 'ghcr.io/bf528/bedtools_samtools:latest'
+    container 'ghcr.io/bf528/bedtools:latest'
     publishDir "${params.outdir}/merged_peaks", mode: 'copy'
     label 'process_low'
 
