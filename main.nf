@@ -1,4 +1,5 @@
 #!/usr/bin/env nextflow
+nextflow.enable.dsl=2
 
 // Import modules
 include { DOWNLOAD_SRA } from './modules/download/main.nf'
@@ -7,7 +8,7 @@ include { FASTQC as FASTQC_TRIMMED } from './modules/fastqc/main.nf'
 include { TRIMMOMATIC } from './modules/trimmomatic/main.nf'
 include { BOWTIE2_ALIGN } from './modules/bowtie2/main.nf'
 include { FILTER_ALIGNMENTS } from './modules/samtools/main.nf'
-include { MACS2_CALLPEAK } from './modules/macs2/main.nf'
+include { HOMER_CALLPEAK } from './modules/homer/main.nf'  // CHANGED
 include { MERGE_PEAKS } from './modules/bedtools/main.nf'
 include { COUNT_PEAKS } from './modules/bedtools/main.nf'
 include { DIFF_ANALYSIS } from './modules/deseq2/main.nf'
@@ -51,11 +52,11 @@ workflow {
     // 4. Align to genome
     BOWTIE2_ALIGN(TRIMMOMATIC.out.trimmed_reads)
 
-    // 5. Filter alignments (remove MT, low quality, duplicates, blacklist)
+    // 5. Filter alignments (remove MT, low quality, duplicates)
     FILTER_ALIGNMENTS(BOWTIE2_ALIGN.out.bam)
 
-    // 6. Call peaks per sample
-    MACS2_CALLPEAK(FILTER_ALIGNMENTS.out.filtered_bam)
+    // 6. Call peaks per sample using HOMER
+    HOMER_CALLPEAK(FILTER_ALIGNMENTS.out.filtered_bam)
 
     // Group by cell type and condition for merging
     FILTER_ALIGNMENTS.out.filtered_bam
@@ -65,7 +66,7 @@ workflow {
         .groupTuple()
         .set { grouped_bams }
 
-    MACS2_CALLPEAK.out.peaks
+    HOMER_CALLPEAK.out.peaks
         .map { sample, cell_type, condition, replicate, peaks -> 
             tuple("${cell_type}_${condition}", peaks)
         }
@@ -102,8 +103,7 @@ workflow {
     ANNOTATE_PEAKS(DIFF_ANALYSIS.out.diff_peaks)
 
     // 11. Motif analysis on differential peaks
-    genome_fasta = Channel.fromPath(params.genome_fasta)
-    MOTIF_ANALYSIS(DIFF_ANALYSIS.out.diff_peaks, genome_fasta.first())
+    MOTIF_ANALYSIS(DIFF_ANALYSIS.out.diff_peaks)
 
     // Generate bigWig files for visualization
     BIGWIG_COVERAGE(FILTER_ALIGNMENTS.out.filtered_bam)
@@ -128,7 +128,7 @@ workflow {
     // Calculate FRiP scores
     FRIP_SCORE(
         FILTER_ALIGNMENTS.out.filtered_bam
-            .join(MACS2_CALLPEAK.out.peaks, by: [0,1,2,3])
+            .join(HOMER_CALLPEAK.out.peaks, by: [0,1,2,3])
     )
 
     // Collect all QC outputs
