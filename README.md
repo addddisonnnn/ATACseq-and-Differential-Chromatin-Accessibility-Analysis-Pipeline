@@ -34,12 +34,10 @@ ATACseq-and-Differential-Chromatin-Accessibility-Analysis-Pipeline
 │       ├── annotate.nf     # Peak annotation
 │       └── motifs.nf       # Motif finding
 ├── reference/
-│   ├── bowtie2_index/ 
-│   ├── genome.fa           # Reference Gneome
+│   ├── bowtie2_index/      # Indexed genome
+│   ├── genome.fa           # Reference Gneome (mm10/GRCm38)
 │   ├── genes.gtf           # GTF Annotation
-│   ├── genome.chrom.sizes  # Chromosome Size
-│   └── mm10-blacklist.v2.bed # Blacklisted 
-
+│   └── genome.chrom.sizes  # Chromosome size
 └── results/                # Output directory
 ```
 
