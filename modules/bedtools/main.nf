@@ -13,10 +13,25 @@ process MERGE_PEAKS {
 
     script:
     """
+    # Set temp directory to current work directory
+    export TMPDIR=\$PWD/tmp
+    mkdir -p \$TMPDIR
+    
+    echo "Processing group: ${group_id}"
+    echo "Number of peak files: \$(echo ${peaks} | wc -w)"
+    
+    # Merge all peak files
     cat ${peaks} | \
-        cut -f1-3 | \
-        sort -k1,1 -k2,2n | \
+        awk 'BEGIN{OFS="\t"} NF >= 3 {print \$1, \$2, \$3}' | \
+        sort -T \$TMPDIR -k1,1 -k2,2n | \
         bedtools merge -i - > ${group_id}_merged.bed
+    
+    # Report result
+    num_merged=\$(wc -l < ${group_id}_merged.bed)
+    echo "Merged to \$num_merged regions for ${group_id}"
+    
+    # Cleanup
+    rm -rf \$TMPDIR
     """
 
     stub:
@@ -41,7 +56,6 @@ process COUNT_PEAKS {
     # Check if peaks file is empty or has no peaks
     if [ ! -s ${peaks} ] || [ \$(wc -l < ${peaks}) -eq 0 ]; then
         echo "WARNING: Empty peaks file for ${sample}, creating dummy counts"
-        # Create a dummy count file with zeros
         echo -e "chr1\t1\t1000\t0" > ${sample}_counts.txt
     else
         bedtools coverage -a ${peaks} -b ${bam} -counts > ${sample}_counts.txt
