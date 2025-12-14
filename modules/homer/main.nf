@@ -19,26 +19,39 @@ process HOMER_CALLPEAK {
     makeTagDirectory ${sample}_tags ${bam} -format sam 2>&1 | tee ${sample}_homer.log
     
     # Find peaks using HOMER for ATAC-seq
-    # -style factor: for sharp peaks (ATAC-seq, ChIP-seq TFs)
-    # -size 150: expected fragment size
-    # -minDist 150: minimum distance between peaks
     findPeaks ${sample}_tags -style factor -size 150 -minDist 150 -o auto 2>&1 | tee -a ${sample}_homer.log
     
     # Convert HOMER peaks to narrowPeak format
-    # HOMER format: PeakID chr start end strand Normalized Tag Count focus ratio
-    pos2bed.pl ${sample}_tags/peaks.txt > ${sample}_peaks.bed
+    # CRITICAL: grep -v to remove ALL comment lines starting with #
+    grep -v "^#" ${sample}_tags/peaks.txt | \
+    awk 'BEGIN{OFS="\t"} 
+         # Skip header line and empty lines
+         \$1 != "PeakID" && \$1 != "" && NF >= 6 {
+             # HOMER format: PeakID chr start end strand score focusRatio ...
+             chr = \$2
+             start = \$3
+             end = \$4
+             name = \$1
+             score = (\$6 > 1000) ? 1000 : int(\$6)
+             strand = \$5
+             signal = (NF >= 7) ? \$7 : \$6
+             summit = int((end - start) / 2)
+             
+             # Output narrowPeak format
+             print chr, start, end, name, score, strand, signal, -1, -1, summit
+         }' > ${sample}_peaks.narrowPeak
     
-    # Convert to narrowPeak (chr start end name score strand signalValue pValue qValue peak)
-    awk 'BEGIN{OFS="\t"} NR>1 {
-        print \$2, \$3, \$4, \$1, \$6, \$5, \$6, -1, -1, int((\$4-\$3)/2)
-    }' ${sample}_tags/peaks.txt > ${sample}_peaks.narrowPeak
-    
-    # Copy stats
+    # Copy stats (keep original with comments)
     cp ${sample}_tags/peaks.txt ${sample}_peaks.txt
     
-    # Count peaks
-    num_peaks=\$(wc -l < ${sample}_peaks.narrowPeak)
+    # Count peaks (excluding comments and header)
+    num_peaks=\$(grep -v "^#" ${sample}_peaks.narrowPeak | wc -l)
     echo "SUCCESS: Called \$num_peaks peaks with HOMER" >> ${sample}_homer.log
+    
+    # Verify we have peaks
+    if [ "\$num_peaks" -eq 0 ]; then
+        echo "WARNING: No peaks in final narrowPeak file!" >> ${sample}_homer.log
+    fi
     
     # Cleanup
     rm -rf ${sample}_tags
@@ -53,7 +66,7 @@ process HOMER_CALLPEAK {
 }
 
 process ANNOTATE_PEAKS {
-    container 'ghcr.io/bf528/homer:latest'
+    container 'ghcr.io/bf528/homer_samtools:latest'
     publishDir "${params.outdir}/annotation", mode: 'copy'
     label 'process_low'
 
@@ -79,7 +92,7 @@ process ANNOTATE_PEAKS {
 }
 
 process MOTIF_ANALYSIS {
-    container 'ghcr.io/bf528/homer:latest'
+    container 'ghcr.io/bf528/homer_samtools:latest'
     publishDir "${params.outdir}/motifs", mode: 'copy'
     label 'process_medium'
 
