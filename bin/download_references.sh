@@ -1,5 +1,6 @@
 #!/bin/bash
 # Download and prepare mouse reference genome files for mm10
+# run with qsub -P bf528 -N download_ref -V bin/bowtie.sh
 
 mkdir -p reference
 cd reference
