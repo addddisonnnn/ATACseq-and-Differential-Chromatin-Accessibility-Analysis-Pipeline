@@ -34,8 +34,12 @@ ATACseq-and-Differential-Chromatin-Accessibility-Analysis-Pipeline
 │       ├── annotate.nf     # Peak annotation
 │       └── motifs.nf       # Motif finding
 ├── reference/
-│   ├── genome.fa           # Mouse Reference Gneome
-│   └── genes.gtf           # Mouse GTF Annotation
+│   ├── bowtie2_index/ 
+│   ├── genome.fa           # Reference Gneome
+│   ├── genes.gtf           # GTF Annotation
+│   ├── genome.chrom.sizes  # Chromosome Size
+│   └── mm10-blacklist.v2.bed # Blacklisted 
+
 └── results/                # Output directory
 ```
 
