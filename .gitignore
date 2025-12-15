@@ -1,4 +1,5 @@
 work/
+nf_results/
 .nextflow/
 .nextflow.log*
 results/
