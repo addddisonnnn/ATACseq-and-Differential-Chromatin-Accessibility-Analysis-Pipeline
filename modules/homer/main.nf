@@ -22,12 +22,9 @@ process HOMER_CALLPEAK {
     findPeaks ${sample}_tags -style factor -size 150 -minDist 150 -o auto 2>&1 | tee -a ${sample}_homer.log
     
     # Convert HOMER peaks to narrowPeak format
-    # CRITICAL: grep -v to remove ALL comment lines starting with #
     grep -v "^#" ${sample}_tags/peaks.txt | \
     awk 'BEGIN{OFS="\t"} 
-         # Skip header line and empty lines
          \$1 != "PeakID" && \$1 != "" && NF >= 6 {
-             # HOMER format: PeakID chr start end strand score focusRatio ...
              chr = \$2
              start = \$3
              end = \$4
@@ -37,23 +34,18 @@ process HOMER_CALLPEAK {
              signal = (NF >= 7) ? \$7 : \$6
              summit = int((end - start) / 2)
              
-             # Output narrowPeak format
              print chr, start, end, name, score, strand, signal, -1, -1, summit
          }' > ${sample}_peaks.narrowPeak
     
-    # Copy stats (keep original with comments)
     cp ${sample}_tags/peaks.txt ${sample}_peaks.txt
     
-    # Count peaks (excluding comments and header)
     num_peaks=\$(grep -v "^#" ${sample}_peaks.narrowPeak | wc -l)
     echo "SUCCESS: Called \$num_peaks peaks with HOMER" >> ${sample}_homer.log
     
-    # Verify we have peaks
     if [ "\$num_peaks" -eq 0 ]; then
         echo "WARNING: No peaks in final narrowPeak file!" >> ${sample}_homer.log
     fi
     
-    # Cleanup
     rm -rf ${sample}_tags
     """
 
@@ -78,8 +70,9 @@ process ANNOTATE_PEAKS {
 
     script:
     """
-    if [ -s ${peaks} ]; then
-        annotatePeaks.pl ${peaks} mm10 > ${cell_type}_annotated.txt
+    if [ -s ${peaks} ] && [ \$(wc -l < ${peaks}) -gt 0 ]; then
+        # Use genome fasta instead of pre-installed genome
+        annotatePeaks.pl ${peaks} ${params.genome_fasta} -gtf ${params.genome_gtf} > ${cell_type}_annotated.txt
     else
         echo "# No peaks to annotate" > ${cell_type}_annotated.txt
     fi
@@ -107,7 +100,8 @@ process MOTIF_ANALYSIS {
     mkdir -p ${cell_type}_motifs
     
     if [ -s ${peaks} ] && [ \$(wc -l < ${peaks}) -gt 10 ]; then
-        findMotifsGenome.pl ${peaks} mm10 ${cell_type}_motifs/ \
+        # Use genome fasta instead of pre-installed genome
+        findMotifsGenome.pl ${peaks} ${params.genome_fasta} ${cell_type}_motifs/ \
             -size 200 -mask
     else
         echo "<html><body>No significant peaks for motif analysis</body></html>" > ${cell_type}_motifs/homerResults.html
