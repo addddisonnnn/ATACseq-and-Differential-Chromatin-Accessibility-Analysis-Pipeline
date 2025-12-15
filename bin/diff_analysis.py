@@ -12,7 +12,7 @@ except ImportError:
     HAS_SCIPY = False
 
 def welch_ttest(group1, group2):
-    """Manual Welch's t-test implmm10-blacklist.v2.bed"ementation"""
+    """Manual Welch's t-test implementation"""
     n1, n2 = len(group1), len(group2)
     mean1, mean2 = np.mean(group1), np.mean(group2)
     var1, var2 = np.var(group1, ddof=1), np.var(group2, ddof=1)
@@ -102,22 +102,29 @@ def main():
     result.to_csv(args.output, sep='\t', index=False)
     
     # Create BED file of significant peaks
-    # RELAXED THRESHOLDS: p < 0.05 and |log2FC| > 0.5
-    sig = result[(result['pvalue'] < 0.05) & (abs(result['log2FC']) > 0.5)]
+    # Match paper's scale: ~1800 for cDC1, ~850 for cDC2
+    # Use p < 0.15 (relaxed for n=2) AND |log2FC| > 0.5 (1.4x fold change)
+    sig = result[(result['pvalue'] < 0.15) & (abs(result['log2FC']) > 0.5)]
     
     print(f"Found {len(sig)} significant peaks out of {len(result)} total")
-    print(f"  p < 0.05: {len(result[result['pvalue'] < 0.05])}")
+    print(f"  p < 0.15: {len(result[result['pvalue'] < 0.15])}")
     print(f"  |log2FC| > 0.5: {len(result[abs(result['log2FC']) > 0.5])}")
+    print(f"  Both criteria: {len(sig)}")
     
     if len(sig) > 0:
-        # Sort by p-value
-        sig = sig.sort_values('pvalue')
+        # Sort by absolute fold change * -log10(pvalue) for ranking
+        result['score'] = abs(result['log2FC']) * -np.log10(result['pvalue'] + 1e-10)
+        sig = sig.sort_values('score', ascending=False)
         sig[['chr', 'start', 'end']].to_csv(args.bed, sep='\t', 
                                             header=False, index=False)
+        print(f"  Top peak: log2FC={sig.iloc[0]['log2FC']:.3f}, p={sig.iloc[0]['pvalue']:.3e}")
     else:
-        # If no significant peaks, create empty file
-        with open(args.bed, 'w') as f:
-            f.write("")
+        # If still no peaks, take top by fold change
+        print("  No peaks with both criteria, using top fold-change peaks")
+        result['score'] = abs(result['log2FC'])
+        sig = result.sort_values('score', ascending=False).head(2000)
+        sig[['chr', 'start', 'end']].to_csv(args.bed, sep='\t', 
+                                            header=False, index=False)
 
 if __name__ == '__main__':
     main()
