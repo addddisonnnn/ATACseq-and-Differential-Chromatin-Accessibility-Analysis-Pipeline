@@ -2,7 +2,7 @@
 
 process FEATURE_COUNTS {
     container 'ghcr.io/bf528/featurecounts:latest'
-    publishDir "${params.outdir}/counts", mode: 'copy'
+    publishDir "${params.outdir}/counts_rna", mode: 'copy'
     label 'process_medium'
 
     input:
